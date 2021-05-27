@@ -114,9 +114,9 @@ On macOS, the distribution `ssh-agent` integrates with the system keychain.
 Other choices include the `ssh-agent` provided by the `openssh` suite, the
 `gpg-agent`, or (on Linux systems) `gnome-keyring`.
 
-Lastly, we consider [D-Bus][dbus] for publish-subscribe messaging (see
-[messaging](#messaging)). D-Bus is available on `systemd`-based systems per
-default, while it requires use of an external package manager on macOS.
+Lastly, we consider [D-Bus][dbus] for publish-subscribe messaging. D-Bus is
+available on `systemd`-based systems per default, while it requires use of an
+external package manager on macOS.
 
 > Note: a D-Bus implementation is provided on `systemd`-based platforms, and can
 > be installed on macOS using `homebrew` or `MacPorts`. It may, however, turn
