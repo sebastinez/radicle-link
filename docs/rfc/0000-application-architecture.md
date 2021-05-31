@@ -118,7 +118,7 @@ We will rely on declarative service / process management to be provided by the
 platform, specifically "socket activation".
 
 On macOS, this is provided on macOS via [launchd]. Linux distributions
-considered as tier 1 shall, however, by limited to those based on  [systemd] for
+considered as tier 1 shall, however, be limited to those based on [systemd] for
 the time being.
 
 We also assume the presence of an agent capable of producing Ed25519 signatures
