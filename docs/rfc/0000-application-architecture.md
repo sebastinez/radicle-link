@@ -23,6 +23,7 @@
     -   [CLI](#cli)
     -   [Native Applications](#native-applications)
     -   [Browser Applications](#browser-applications)
+-   [Drawbacks](#drawbacks)
 -   [Future Work](#future-work)
 
 
@@ -449,6 +450,15 @@ the `radicle-link` state for the following reasons:
 
 Even when unprivileged, browser applications SHOULD implement an authentication
 scheme using one-time / time-restricted access tokens.
+
+
+## Drawbacks
+
+The main drawback of any service-oriented architecture is that it increases
+complexity by having to consider inter-service dependencies. Since all
+components are to be deployed on a single host, some of this can be mitigated by
+proper package management. During development this can however cause friction,
+especially when multiple services need to be updated in lockstep.
 
 
 ## Future Work
