@@ -21,6 +21,7 @@
     -   [Peer-to-peer Node](#peer-to-peer-node)
     -   [git](#git)
     -   [CLI](#cli)
+    -   [Native Applications](#native-applications)
     -   [Browser Applications](#browser-applications)
 -   [Future Work](#future-work)
 
@@ -128,20 +129,30 @@ external package manager on macOS.
 ### Signatures
 
 Each process which needs to produce signatures using the `radicle-link` _device
-key_, SHALL delegate this to an agent conforming to the [SSH agent
-protocol][ssh-agent] (section 4.5.).
+key_, SHALL delegate this to an agent conforming to the [SSH agent protocol][ssh-agent]
+(section 4.5.).
 
-Key access restrictions thus depend on user configuration: the agent could be
-configured to prompt for a passphrase after a timeout elapses (or never),
+**Key access restrictions** thus depend on user configuration: the agent could
+be configured to prompt for a passphrase after a timeout elapses (or never),
 require presence of a hardware security token, or utilise platform
-authenticators such as TouchID&trade;.
+authenticators such as TouchID&trade;. Note that this presents a challenge: some
+processes will reasonably require unattended access to the key (notably
+[peer-to-peer nodes](#peer-to-peer-node)), while interactive use may benefit
+from a user presence confirmation. This cannot be solved without restricting the
+user's access to the key material, eg. by requiring a second-factor token. As we
+can't assume widespread use of hardware tokens yet, we defer addressing the
+issue to a future proposal.
 
-Key generation SHOULD, however, be performed using `radicle-link`-supplied
+We RECOMMEND to provide tooling for importing key material into the agent which
+sets a reasonable lifetime for the key, after which it must be re-loaded from
+disk (requiring a passphrase prompt for decryption).
+
+**Key generation** SHOULD, however, be performed using `radicle-link`-supplied
 tooling building on the [ed25519-zebra] library, which prevents certain weaker
 keys from being generated.
 
-Signature verification MUST be performed using the [ed25519-zebra] library, and
-thus MUST NOT be delegated to the agent.
+**Signature verification** MUST be performed using the [ed25519-zebra] library,
+and thus MUST NOT be delegated to the agent.
 
 Note that (hypothetical) applications which require a large number of signatures
 to be generated (such as data migration tools) may find `ssh-agent` throughput
@@ -160,6 +171,8 @@ with a success status (except by another request for the socket).
 
 All daemon processes SHALL run with user privileges (typically the logged-in
 user). Further confinement (e.g. SELinux) is beyond the scope of this document.
+It is RECOMMENDED to restrict modification of service definition files to
+require super-user privileges.
 
 
 ### IPC
@@ -175,99 +188,56 @@ incremental decoders are not available on all platforms, CBOR-encoded messages
 shall be prepended by their length in bytes, encoded as a 32-bit unsigned
 integer in network byte order.
 
-Our security model does not include an attacker which is able to intercept
-traffic on local UNIX sockets. We also do not consider the possibility of
-substituting a service executable with a malicious one listening on the "well
-known" socket for that service. Consequently, we do not require transport-layer
-security nor verification of the service's identity.
-
-We do, however, require that client applications requesting privileged
-operations to be performed by a service prove their ability to obtain a _device
-key_ signature (see [Signatures](#signatures)) themselves. This provides basic
-protection against unauthorized access, as well as accidental routing errors.
-
-To achieve this, we devise a simple protocol:
-
 RPC messages are wrapped in either a `request` or `response` envelope structure
 as defined below:
 
 ```cddl
-request = (
+request = [
     request-headers,
     ? payload: bstr,
-)
+]
 
 response = ok / error
 
-ok = (
+ok = [
     response-headers,
     ? payload: bstr,
-)
+]
 
-error = (
+error = [
     response-headers,
-    code: error-code,
+    code: uint,
     ? message: tstr,
-)
+]
 
-request-headers = (
-    client-id: tstr .size (4..16),
-    ? ticket: ticket,
-    ? signature: bstr .size 64,
-)
+request-headers = {
+    ua: client-id,
+    rq: request-id,
+    ? token: token,
+}
 
-response-headers = (
-    ? request: ticket,
-    ? next: ticket,
-)
+response-headers = {
+    rq: request-id,
+}
 
-error-code = forbidden / connection-close
+; Unambiguous, human-readable string identifying the client application. Mainly
+; for diagnostic purposes. Example: "radicle-link-cli/v1.2+deaf"
+client-id: tstr .size (4..16)
 
-ticket = bstr .size (16..64)
+; Request identifier, choosen by the client. The responder includes the
+; client-supplied value in the response, enabling request pipelining.
+;
+; Note that streaming / multi-valued responses may include the same id in
+; several response messages.
+request-id: bstr .size (4..16)
+
+; Placeholder for future one-time-token support.
+token: bstr
 ```
 
 > Note: for brevity we use [CDDL] groups (parenthesis) to denote [array
 > encoding][cbor-array]. Embedded groups (without a label) imply that the group
 > is inlined.
-
-The `client-id` is an unambiguous, human-readable string identifying the client
-application (e.g. "radicle-cli").
-
-The `payload` is the CBOR-encoded application-level message.
-
-A `ticket` serves as a request-id (enabling pipelining), nonce, and as a means
-for applying backpressure to clients. It is chosen at random by the server for
-each response it sends.
-
-A `request` can be made without a `ticket` header if either:
-
-* It is the first `request` on a newly established connection **and** no
-  `signature` is required for the RPC
-* The client wishes to allocate additional tickets, in which case it sends a
-  `request` with all optional fields set to null
-
-Otherwise, a ticket received by any of the `response` variants (`next` field)
-must be used for subsequent RPCs. The issuer may refuse to issue more tickets by
-sending an empty response.
-
-The issuer must keep track of the issued tickets until either a `request`
-bearing the ticket is received or the connection is terminated. If a `request`
-without a `ticket` header, or with a `ticket` value which is unknown to the
-issuer, is received, the service MUST terminate the connection, optionally after
-sending an `error` response.
-
-The initiator of an RPC determines, based on application semantics, if the
-request requires authentication. If it does, the initiator requests a signature
-from the `ssh-agent` over the concatenation of
-
-    ticket || payload
-
-and includes the response, encoded as per [RFC8032], in the `signature` field.
-
-The receiver of an RPC with a non-null `signature` header MUST verify the
-`signature` against its own public key. If signature verification fails, it
-responds with a `forbidden` error, regardless of whether the RPC actually
-requires authentication as per the application semantics.
 
 
 ## Architecture
@@ -277,7 +247,7 @@ With the prerequisites in place, we lay out the following architecture:
 ```
                                    +-----------------+
                                    |                 |
-         +-------------------------+  electron main  +------------------------+
+         +-------------------------+    Native App   +------------------------+
          |                         |                 |                        |
          |                         +--------+--------+                        |
          |                                  |                                 |
@@ -432,38 +402,44 @@ A comprehensive specification of the (initial) set of builtins is beyond the
 scope of this document.
 
 
+### Native Applications
+
+Under native applications, we subsume:
+
+1. [Electron][electron] applications
+2. Applications which can not, or do not want to link against Rust library (such
+   as scripted applications)
+
+Other native applications are assumed to link against the same library modules
+as the [CLI](#cli).
+
+To facilitate rapid prototyping, but also to mitigate the risk of remote code
+execution (RCE) / cross-site scripting (XSS) attacks especially for electron
+applications, we RECOMMEND to develop native applications in a client-server
+style, where `radicle-link` functionality is provided as [CLI](#cli) subcommands
+callable over an [IPC](#ipc) socket. Recomposition of subcommands is encouraged.
+
+For electron applications specifically, we strongly RECOMMEND to follow security
+best practices. Minimally, renderer processes SHALL NOT have access to the node
+environment, and proxy backend calls through the main process (renderer-main
+communication utilises Chrome IPC, which is harder to attack than a TCP
+connection to a backend process).
+
+
 ### Browser Applications
 
-In practice, browser applications are limited to HTTP or WebSockets for network
-calls, filesystem operations must be delegated to a backend service. This poses
-two security concerns:
+At this point, we discourage browser applications which allow modification of
+the `radicle-link` state for the following reasons:
 
-1. The backend must bind to a well-known TCP port, which is then accessible by
-   all other programs on the same host. Moreover, browsers can be tricked by
-   remote sites into issuing requests against the local host.
-2. Public-key based authentication APIs (such as [WebAuthn][webauthn]) are not
-   yet mature / flexible / portable enough to allow a browser frontend to prove
-   access to the (shared) private key to a backend process.
+* For most practical purposes, browser-backend communication relies on a TCP
+  socket. Even if bound only to the loopback interface, this poses a security
+  risk due to RCE / XSS attack vectors.
+* Meaningful authentication & authorization can only be achieved using
+  second-factor authentication, which we don't consider feasible at this point
+  (see also [Signatures](#signatures)).
 
-For these reasons, we devise the following restrictions:
-
-* TCP-based backend services MUST NOT expose privileged operations.
-* Applications built using browser-based frameworks (such as [electron]) MUST
-  proxy service calls through the privileged `main` process, which is
-  responsible for acquiring signatures via the `ssh-agent` protocol where
-  necessary, and calling the backend service via [IPC](#ipc).
-
-Since preferences of web developers regarding the granularity of remote calls
-vary, they may choose to implement their own IPC backend, possibly re-composing
-the library functionality of [CLI](#cli) subcommands.
-
-Browser applications SHOULD be packaged in a way such that their main backend
-conforms to [Process Orchestration](#process-orchestration), and include other
-services via the package manager's dependency management mechanism. If that is
-not desired (e.g. [AppImage] bundles), they MUST sandbox all service
-dependencies, and MUST NOT interact with services installed outside the sandbox
-(ie. all configuration and state must be relative to the bundle root, process
-management is up to the application, and separate key material must be used).
+Even when unprivileged, browser applications SHOULD implement an authentication
+scheme using one-time / time-restricted access tokens.
 
 
 ## Future Work
@@ -481,6 +457,23 @@ applicable to resource-constrained environments, and thus a protocol revision
 would be prerequisite. A traditional client-server architecture, where the
 mobile device serves as a frontend to a remote service might be a first step,
 however.
+
+As alluded to throughout the document, security rests mainly on an uncompromised
+user space: both malware running under the user's privileges as well as
+root-level compromise can, simplified, gain access to the `SSH_AUTH_SOCK`, and
+thereby compromise the application. Note that this is not specific to the
+service-oriented architecture. The underlying difficulty is one of user
+experience: repeated confirmation prompts tend to lead users to weaken security
+by increasing intervals between prompts, or disabling them altogether. As
+biometric user identification facilities become more widely deployed on consumer
+hardware, we may consider encouraging their use.
+
+Relatedly, it is left unspeficied how applications dispatch notifications which
+may result in prompting the user: stateful applications may wish to present
+those within their own top-level window instead of allowing daemon processes to
+pop up parent-less dialogs. Intuitively, this requires a distributed locking
+mechanism, which we'll leave to a future proposal.
+
 
 
 [#461]: https://github.com/radicle-dev/radicle-link/issues/461
@@ -500,4 +493,3 @@ however.
 [surf]: https://github.com/radicle-dev/radicle-surf
 [systemd]: https://systemd.io/
 [tx]: https://github.com/libgit2/libgit2/blob/main/include/git2/transaction.h
-[webauthn]: https://www.w3.org/TR/webauthn-2/
