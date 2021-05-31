@@ -427,7 +427,8 @@ To facilitate rapid prototyping, but also to mitigate the risk of remote code
 execution (RCE) / cross-site scripting (XSS) attacks especially for electron
 applications, we RECOMMEND to develop native applications in a client-server
 style, where `radicle-link` functionality is provided as [CLI](#cli) subcommands
-callable over an [IPC](#ipc) socket. Recomposition of subcommands is encouraged.
+callable over an [IPC](#ipc) socket. Recomposition of subcommands into custom
+IPC daemons is encouraged.
 
 For electron applications specifically, we strongly RECOMMEND to follow security
 best practices. Minimally, renderer processes SHALL NOT have access to the node
