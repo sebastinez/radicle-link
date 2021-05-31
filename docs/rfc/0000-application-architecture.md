@@ -69,6 +69,19 @@ We dismiss the approach of providing a local monolithic server which encompasses
 all required functionality for modularity and extensibility reasons.
 
 
+## Terminology and Conventions
+
+The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL NOT”, “SHOULD”,
+“SHOULD NOT”, “RECOMMENDED”, “NOT RECOMMENDED”, “MAY”, and “OPTIONAL” in this
+document are to be interpreted as described in [RFC2119] and [RFC8174] when, and
+only when, they appear in all capitals, as shown here.
+
+CBOR datatype definitions are given using the notation devised in [CDDL]. For
+brevity, heterogenously typed arrays denote [array encoding][cbor-array], ie.
+each field is encoded as a two-element array where the first element is a
+(zero-based) index of the field in declaration order, and the second element is
+the value itself (or null in the case of an absent optional value).
+
 ## Prerequisites
 
 ### Platforms
@@ -234,10 +247,6 @@ request-id: bstr .size (4..16)
 ; Placeholder for future one-time-token support.
 token: bstr
 ```
-
-> Note: for brevity we use [CDDL] groups (parenthesis) to denote [array
-> encoding][cbor-array]. Embedded groups (without a label) imply that the group
-> is inlined.
 
 
 ## Architecture
@@ -481,7 +490,9 @@ mechanism, which we'll leave to a future proposal.
 [CBOR]: https://datatracker.ietf.org/doc/html/rfc8949
 [CDDL]: https://datatracker.ietf.org/doc/html/rfc8610
 [CSRF]: https://en.wikipedia.org/wiki/Cross-site_request_forgery
+[RFC2119]: https://datatracker.ietf.org/doc/html/rfc2119
 [RFC8032]: https://datatracker.ietf.org/doc/html/rfc8032
+[RFC8174]: https://datatracker.ietf.org/doc/html/rfc8174
 [cbor-array]: https://docs.rs/minicbor-derive/0.6.3/minicbor_derive/#array-encoding
 [dbus]: https://freedesktop.org/Software/dbus
 [ed25519-zebra]: https://github.com/ZcashFoundation/ed25519-zebra
