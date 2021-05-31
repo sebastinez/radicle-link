@@ -16,6 +16,7 @@
     -   [Signatures](#signatures)
     -   [Process Orchestration](#process-orchestration)
     -   [IPC](#ipc)
+    -   [PubSub](#pubsub)
 -   [Architecture](#architecture)
     -   [Storage](#storage)
     -   [Peer-to-peer Node](#peer-to-peer-node)
@@ -128,17 +129,6 @@ On macOS, the distribution `ssh-agent` integrates with the system keychain.
 Other choices include the `ssh-agent` provided by the `openssh` suite, the
 `gpg-agent`, or (on Linux systems) `gnome-keyring`.
 
-Lastly, we consider [D-Bus][dbus] for publish-subscribe messaging. D-Bus is
-available on `systemd`-based systems per default, while it requires use of an
-external package manager on macOS.
-
-> Note: a D-Bus implementation is provided on `systemd`-based platforms, and can
-> be installed on macOS using `homebrew` or `MacPorts`. It may, however, turn
-> out to complicate builds due to varying link-time requirements. As we only
-> intend to use D-Bus for pub-sub messaging ("signals"), we may instead consider
-> to provide a purpose-built in-memory pub-sub service.
-
-
 ### Signatures
 
 Each process which needs to produce signatures using the `radicle-link` _device
@@ -247,6 +237,31 @@ request-id: bstr .size (4..16)
 ; Placeholder for future one-time-token support.
 token: bstr
 ```
+
+### PubSub
+
+A number of instances exist in the system where a process (interactive or not)
+may want to react to an _event_ of some sort: the repository state has been
+updated by an explicit push or a fetch from the network, some defined object was
+created / deleted / modified, connectivity was lost or gained, etc.. The
+_sender_ of such events commonly does not need or want to be concerned with what
+recepients may or may not exist, and deal with buffering or re-delivery. In
+other words, this follows a publish-subscribe pattern.
+
+An obvious implementation choice for platforms which are tightly integrated with
+it would be [D-Bus][dbus]. This may, however, cause unreasonable build-time
+complexity on other platforms, while not achieving the same degree of
+integration. Since a wide variety of message brokers exist (but few of them
+intended for use in desktop environments), we leave the choice to a future
+proposal, and assume the following properties for the sake of this discussion:
+
+* Arbitrary binary payloads can be sent
+* Subscription is explicit, ie. we don't assume process activation upon matching
+  events
+* There is some basic facility to express interest in particular events (eg.
+  prefix-matching a topic name), which is evaluated by the broker
+* There is a way to apply buffering on a per-topic basis, in order to cater for
+  subscriber restarts
 
 
 ## Architecture
