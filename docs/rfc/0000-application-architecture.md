@@ -117,9 +117,8 @@ For this discussion, we divide platform targets into tiers:
 We will rely on declarative service / process management to be provided by the
 platform, specifically "socket activation".
 
-On macOS, this is provided on macOS via [launchd]. Linux distributions
-considered as tier 1 shall, however, be limited to those based on [systemd] for
-the time being.
+On macOS, this is provided via [launchd]. Linux distributions considered as tier
+1 shall, however, be limited to those based on [systemd] for the time being.
 
 We also assume the presence of an agent capable of producing Ed25519 signatures
 utilising the [SSH agent protocol][ssh-agent].
@@ -487,7 +486,6 @@ mechanism, which we'll leave to a future proposal.
 
 
 [#461]: https://github.com/radicle-dev/radicle-link/issues/461
-[AppImage]: https://appimage.org
 [CBOR]: https://datatracker.ietf.org/doc/html/rfc8949
 [CDDL]: https://datatracker.ietf.org/doc/html/rfc8610
 [CSRF]: https://en.wikipedia.org/wiki/Cross-site_request_forgery
