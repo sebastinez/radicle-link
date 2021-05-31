@@ -393,8 +393,9 @@ CBOR serialisation for its arguments and outputs.
 To enable [browser applications](#browser-applications), subcommands may be
 callable over the [IPC](#ipc) protocol ("CLIaaS"). The canonical CLI may provide
 a command to bind all available subcommands to a socket wholesale, or a
-configurable subset of them. Unprivileged subcommands may also be exposed as a
-HTTP API (see [Browser Applications](#browser-applications)).
+configurable subset of them. Unprivileged subcommands (ie. commands which do not
+modify the configuration nor state) may also be exposed as a HTTP API (see
+[Browser Applications](#browser-applications)).
 
 The builtin subcommands shall include network clients for interacting with local
 p2p nodes and the pub-sub bus. The vast majority of new functionality will,
