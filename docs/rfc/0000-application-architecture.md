@@ -76,7 +76,7 @@ The key words “MUST”, “MUST NOT”, “REQUIRED”, “SHALL”, “SHALL 
 document are to be interpreted as described in [RFC2119] and [RFC8174] when, and
 only when, they appear in all capitals, as shown here.
 
-CBOR datatype definitions are given using the notation devised in [CDDL]. For
+[CBOR] datatype definitions are given using the notation devised in [CDDL]. For
 brevity, heterogenously typed arrays denote [array encoding][cbor-array], ie.
 each field is encoded as a two-element array where the first element is a
 (zero-based) index of the field in declaration order, and the second element is
