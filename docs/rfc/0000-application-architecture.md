@@ -417,8 +417,8 @@ scope of this document.
 Under native applications, we subsume:
 
 1. [Electron][electron] applications
-2. Applications which can not, or do not want to link against Rust library (such
-   as scripted applications)
+2. Applications which can not, or do not want to link against Rust libraries
+   (such as scripted applications)
 
 Other native applications are assumed to link against the same library modules
 as the [CLI](#cli).
