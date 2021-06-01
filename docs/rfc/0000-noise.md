@@ -130,6 +130,7 @@ being. The recommendation is thus to revisit the state of affairs when
 proposal on hold until then.
 
 
+[ALPN]: https://datatracker.ietf.org/doc/html/rfc7301
 [QUIC-versions]: https://github.com/quicwg/base-drafts/wiki/QUIC-Versions
 [QUIC]: https://datatracker.ietf.org/doc/html/rfc9000
 [TLS]: https://datatracker.ietf.org/doc/html/rfc8446
@@ -140,3 +141,7 @@ proposal on hold until then.
 [quic-version-negotiation]: https://datatracker.ietf.org/doc/html/draft-ietf-quic-version-negotiation
 [quinn-noise]: https://github.com/ipfs-rust/quinn-noise
 [quinn]: https://github.com/quinn-rs/quinn
+[rustls]: https://crates.io/crates/rustls
+[snow]: https://crates.io/crates/snow
+[xoodoo]: https://github.com/ipfs-rust/xoodoo
+[xoodyak]: https://csrc.nist.gov/CSRC/media/Projects/lightweight-cryptography/documents/round-2/spec-doc-rnd2/Xoodyak-spec-round2.pdf
