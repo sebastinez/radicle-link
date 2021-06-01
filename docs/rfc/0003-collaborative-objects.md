@@ -65,28 +65,28 @@ represent it as a JSON schema. We use this simple schema:
 
 ```json
 {
-  "type": "object"
+  "type": "object",
   "rad_signed_by": {
     "fields": ["title", "description", "author"],
-    "keys": ["<authors URN>"],
-  } 
+    "keys": ["<authors URN>"]
+  },
   "properties": {
-    id: {
+    "id": {
       "type": "string",
       "frozen": true
     },
     "title": {
-        "type": "string"
+        "type": "string",
         "automerge_type": "text"
     },
     "description": {
-        "type": "string"
+        "type": "string",
         "automerge_type": "text"
     },
     "author": {
-        "description": "The radicle ID of the author of the issue"
+        "description": "The radicle ID of the author of the issue",
         "const": "<the authors URN>",
-        "frozen": true,
+        "frozen": true
     },
     "comments": {
         "type": "array",
@@ -100,9 +100,9 @@ represent it as a JSON schema. We use this simple schema:
                 "text": {"type": "string"},
                 "author": {
                     "type": "string",
-                    "description": "Radicle URN of the author of the comment"
+                    "description": "Radicle URN of the author of the comment",
                     "automerge_type": "text"
-                },
+                }
             }
         }
     }
@@ -123,11 +123,11 @@ in a non surprising manner.
 The `frozen` key indicates that any change which modifies this field should be
 ignored.
 
-The `rad_signed_by` and is more interesting. The  `rad_signed_by` field tells
-librad to validate that the given properties (in this case the `title`,
-`description`, and `author` properties) are signed by the given identities.
-Combined with the constant URN and `frozen` on the author this allows us to
-ensure that only the author of the issue can change the description or title.
+The `rad_signed_by` key is is more interesting it tells librad to validate that
+the given properties (in this case the `title`, `description`, and `author`
+properties) are signed by the given identities.  Combined with the constant URN
+and `frozen` on the author this allows us to ensure that only the author of the
+issue can change the description or title.
 
 This schema may well be the subject of its own mini standardisation process
 as it is very likely that many different applications will want to interoperate
@@ -294,16 +294,14 @@ the following layout
 
 ```
 .
+|--manifest
+|--schema
+|  |--schema.json
+|  |--migrations
+|  |  |--<migration hash>.json
+|  |  |--<migration hash>.json
 |--change
-|  |--manifest
-|  |--schema
-|  |  |--schema.json
-|  |  |--migrations
-|  |  |  |--<migration hash>.json
-|  |  |  |--<migration hash>.json
-|  |--<change hash>
 |--author
-|--signatures
 ```
 
 This tree contains a single change to a collaborative object. We will go into
@@ -314,10 +312,10 @@ reconstruct the automerge depdency graph.
 Along with the dependencies of the commit we also need to add the commit of the
 identity which created this commit. We need this identity to validate
 signatures and by making the commit a parent we ensure that git will replicate
-it for us. 
+it for us.
 
 
-#### `change/Manifest`
+#### `manifest`
 
 The manifest is a TOML file containing some metadata about the object.
 Specifically it will contain:
@@ -333,7 +331,7 @@ initial `schema.json` and a series of schema migrations which extend that
 initial schema. Schema migrations will not be addressed in detail in this RFC
 but we will show their feasibility.
 
-#### `change/schema`
+#### `schema`
 
 Schemas are primarily important for the interoperability of the system. We need
 applications to be able to rely on the data they are working with being valid,
@@ -346,7 +344,7 @@ present to allow us to store compatible changes to a schema in future. Schema
 migration is out of scope for this RFC.
 
 
-#### `schema/<change hash>`
+#### `change`
 
 This is the automerge change which this commit introduces. It is a binary file
 which must contain a single change and it's dependents must be the dependents
@@ -361,8 +359,8 @@ history to look for changes.
 
 #### `signatures`
 
-This is the signature of the `change` tree using the key in `author`. This uses
-the same format as that of `X-Rad-Signature` trailer on commit messages.
+The commit is signed using the same mechanism as identity documents. Namely
+the `X-rad-signature` trailer.
 
 ### Reconstructing Collaborative Objects
 
