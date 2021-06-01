@@ -10,6 +10,7 @@ use std::{
     net::{Ipv4Addr, SocketAddr, SocketAddrV4, ToSocketAddrs as _},
     num::NonZeroUsize,
     ops::Deref,
+    thread,
     time::Duration,
 };
 
@@ -295,10 +296,8 @@ impl Drop for Testnet {
     fn drop(&mut self) {
         self.tasks.drain(..).for_each(|t| t.abort());
         self.peers.drain(..).for_each(drop);
-        self.rt
-            .take()
-            .unwrap()
-            .shutdown_timeout(Duration::from_secs(1))
+        self.rt.take().unwrap().shutdown_background();
+        thread::sleep(Duration::from_secs(3));
     }
 }
 
