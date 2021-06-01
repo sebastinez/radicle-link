@@ -134,6 +134,8 @@ where
 
     set_default_owner(peer, owner.clone()).await?;
 
+    gossip::announce(peer, &person.urn(), None);
+
     Ok(owner)
 }
 
@@ -151,10 +153,14 @@ where
     P: TryInto<PersonPayload> + Send,
     Error: From<P::Error>,
 {
-    let urn = default_owner(peer).await?.ok_or(Error::MissingOwner)?.urn();
+    let owner = default_owner(peer).await?.ok_or(Error::MissingOwner)?;
+    let urn = owner.urn();
     let payload = payload.try_into()?;
     peer.using_storage(move |store| person::update(store, &urn, None, payload, None))
         .await??;
+
+    gossip::announce(peer, &owner.urn(), None);
+
     Ok(())
 }
 
@@ -508,7 +514,7 @@ where
     S: Clone + Signer,
 {
     let pk = keys::PublicKey::from(peer.signer().public_key());
-    peer.using_storage(move |store| {
+    let identity = peer.using_storage(move |store| {
         let malkovich = person::create(
             store,
             payload::Person {
@@ -520,7 +526,11 @@ where
         Ok::<_, Error>(local::load(store, malkovich.urn())?)
     })
     .await??
-    .ok_or(Error::IdentityCreationFailed)
+    .ok_or(Error::IdentityCreationFailed)?;
+
+    gossip::announce(peer, &identity.urn(), None);
+
+    Ok(identity)
 }
 
 /// Wrapper around the storage track.
