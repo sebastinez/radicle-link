@@ -109,11 +109,11 @@ implementation will receive more scrutiny as it matures.
 
 ### Key Reuse
 
-For completeness, we point out that Noise explicitly discourages re-use of
-static keys for other purposes than the Noise handshake. `radicle-link` does
-deliberately re-use the certificate key to sign identity documents and refs
-advertisements: those uses are considered equivalent to a PKI in which the leaf
-certificate is to be signed by the device-local key.
+For completeness, we point out that Noise explicitly [discourages][noise-sec]
+re-use of static keys for other purposes than the Noise handshake.
+`radicle-link` does deliberately re-use the certificate key to sign identity
+documents and refs advertisements: those uses are considered equivalent to a PKI
+in which the leaf certificate is to be signed by the device-local key.
 
 As long as the principles of it's [TUF] heritage are adhered to -- namely that
 key _delegation_ should be used for extension functionality -- we do not see a
@@ -137,6 +137,7 @@ proposal on hold until then.
 [TUF]: https://theupdateframework.io/
 [ipfs-embed]: https://github.com/ipfs-rust/ipfs-embed
 [link-draft0]: ../spec/drafts/radicle-link-rev1-draft.md
+[noise-sec]: https://noiseprotocol.org/noise.html#security-considerations
 [noise]: https://noiseprotocol.org/noise.html
 [quic-version-negotiation]: https://datatracker.ietf.org/doc/html/draft-ietf-quic-version-negotiation
 [quinn-noise]: https://github.com/ipfs-rust/quinn-noise
