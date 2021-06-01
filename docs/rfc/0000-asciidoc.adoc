@@ -70,7 +70,7 @@ proposal in favour of _reStructured Text_, however.
 
 == Tooling
 
-_Asciidoctor_ <<asciidoctor>> is a easy to install and use converter. _Pandoc_
+_Asciidoctor_ <<asciidoctor>> is an easy to install and use converter. _Pandoc_
 also accepts AsciiDoc.
 
 == Drawbacks
