@@ -89,5 +89,5 @@ Use _AsciiDoc_
 * [[[docusaurus]]] https://docusaurus.io
 * [[[asciidoc]]] https://asciidoc.org
 * [[[rst]]] https://docutils.sourceforge.io/rst.html
-* [[[kramdown]] https://kramdown.gettalong.org/
+* [[[kramdown]]] https://kramdown.gettalong.org/
 * [[[asciidoctor]]] https://asciidoctor.org
