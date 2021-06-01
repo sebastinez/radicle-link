@@ -5,6 +5,9 @@
 :toc:
 :toc-placement: preamble
 
+* Author: {author}
+* Date: {revdate}
+* Status: {revremark}
 * Community discussion: n/a
 * Tracking Issue: n/a
 
