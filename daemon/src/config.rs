@@ -115,7 +115,12 @@ impl discovery::Discovery for StreamDiscovery {
                 for seed in seeds {
                     yield seed.into();
                 }
-                self.seeds_receiver.changed().await.unwrap();
+
+                match self.seeds_receiver.changed().await {
+                    Ok(_) => {},
+                    Err(_) => { break }
+
+                }
             }
         };
 
