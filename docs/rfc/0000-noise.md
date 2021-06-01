@@ -92,10 +92,10 @@ that could be retained using a QUIC version.
 
 ### Experimental Cryptography
 
-`quinn-noise` rely on the (fairly established) [`snow`][snow] implementation of
-Noise, but on an implementation of the [Xoodyak][xoodyak] construction
-specifically written for the purpose ([`xoodoo`][xoodoo]). Unlike the
-[`rustls`][rustls] library underpinning our TLS stack, neither `xoodoo` nor
+`quinn-noise` does not rely on the (fairly established) [`snow`][snow]
+implementation of Noise, but on an implementation of the [Xoodyak][xoodyak]
+construction specifically written for the purpose ([`xoodoo`][xoodoo]). Unlike
+the [`rustls`][rustls] library underpinning our TLS stack, neither `xoodoo` nor
 `quinn-noise` have received a formal security audit yet. To be fair though, the
 same is true for `snow`.
 
