@@ -25,7 +25,7 @@ bugs in implementations.
 
 Recently, the [ipfs-embed] project has released an experimental implementation
 of [Noise transport security for QUIC][quinn-noise], and registered a [QUIC
-version range][QUIC-version]. Due to the similarities in purpose and
+version range][QUIC-versions]. Due to the similarities in purpose and
 implementation, this implementation would be usable as-is for `radicle-link`.
 
 
